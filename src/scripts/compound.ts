@@ -20,6 +20,14 @@ export interface CompoundPoint {
   value: number;
 }
 
+export function valueAtYear(
+  principal: number,
+  rate: number,
+  year: number,
+): number {
+  return principal * (1 + rate) ** year;
+}
+
 export function compoundSeries(
   principal: number,
   rate: number,
@@ -27,7 +35,7 @@ export function compoundSeries(
 ): CompoundPoint[] {
   return Array.from({ length: years + 1 }, (_, year) => ({
     year,
-    value: principal * (1 + rate) ** year,
+    value: valueAtYear(principal, rate, year),
   }));
 }
 

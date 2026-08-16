@@ -113,9 +113,25 @@ const xTicks = [0, 5, 10, 15, 20, 25, 30];
       <path data-testid="actual-curve" class="actual-curve is-hidden" d="" />
     </svg>
 
-    <p data-testid="result" hidden>
-      It's actually worth <strong data-testid="actual-value" />.
-    </p>
+    <section data-testid="result" hidden>
+      <p>It's actually worth <strong data-testid="actual-value" />.</p>
+      <div data-testid="explanation">
+        <p data-testid="explain-first-decade">
+          First 10 years: <span data-testid="explain-first-start" /> →
+          <span data-testid="explain-first-end" /><br />
+          gain: +<span data-testid="explain-first-gain" />
+        </p>
+        <p data-testid="explain-last-decade">
+          Final 10 years: <span data-testid="explain-last-start" /> →
+          <span data-testid="explain-last-end" /><br />
+          gain: +<span data-testid="explain-last-gain" />
+        </p>
+        <p data-testid="explain-callout">
+          The last 10 years create more growth than the first 20 years
+          combined.
+        </p>
+      </div>
+    </section>
   </main>
   <script src="../scripts/main.ts"></script>
 </Layout>

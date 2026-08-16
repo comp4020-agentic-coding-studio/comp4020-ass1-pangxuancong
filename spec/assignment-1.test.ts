@@ -4,9 +4,12 @@ import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 import {
   compoundSeries,
+  formatCurrency,
   PRINCIPAL,
   RATE,
+  valueAtYear,
   YEARS,
+  yForValue,
 } from "../src/scripts/compound";
 import { wirePredictor } from "../src/scripts/main";
 
@@ -61,6 +64,7 @@ describe("assignment-1: compound-interest predictor", () => {
     )!;
     const actualCurve = doc.querySelector('[data-testid="actual-curve"]')!;
     const result = doc.querySelector('[data-testid="result"]')!;
+    const guessMarker = doc.querySelector('[data-testid="guess-marker"]')!;
 
     it("updates the guess readout live, before any reveal", () => {
       slider.value = "5000";
@@ -70,6 +74,10 @@ describe("assignment-1: compound-interest predictor", () => {
       expect(actualCurve.classList.contains("is-hidden")).toBe(true);
       expect(result.hasAttribute("hidden")).toBe(true);
       expect(slider.disabled).toBe(false);
+
+      // Before reveal, the marker is a flat readout of the guess level, not
+      // a line from the principal — both endpoints sit at the same height.
+      expect(guessMarker.getAttribute("y1")).toBe(guessMarker.getAttribute("y2"));
     });
 
     it("reveals the true curve and value on the reveal action, and locks the guess", () => {
@@ -79,6 +87,47 @@ describe("assignment-1: compound-interest predictor", () => {
       expect(actualCurve.getAttribute("d")).not.toBe("");
       expect(result.hasAttribute("hidden")).toBe(false);
       expect(slider.disabled).toBe(true);
+    });
+
+    it("replaces the flat guess marker with a linear-growth line pinned to the real principal", () => {
+      const y1 = Number(guessMarker.getAttribute("y1"));
+      const y2 = Number(guessMarker.getAttribute("y2"));
+
+      expect(y1).toBeCloseTo(yForValue(PRINCIPAL), 5);
+      expect(y2).toBeCloseTo(yForValue(5000), 5);
+      expect(y1).not.toBeCloseTo(y2, 1);
+    });
+
+    it("explains the decade breakdown after reveal", () => {
+      const firstEnd = valueAtYear(PRINCIPAL, RATE, 10);
+      const lastStart = valueAtYear(PRINCIPAL, RATE, 20);
+      const lastEnd = valueAtYear(PRINCIPAL, RATE, YEARS);
+
+      expect(
+        doc.querySelector('[data-testid="explain-first-start"]')
+          ?.textContent,
+      ).toBe(formatCurrency(PRINCIPAL));
+      expect(
+        doc.querySelector('[data-testid="explain-first-end"]')?.textContent,
+      ).toBe(formatCurrency(firstEnd));
+      expect(
+        doc.querySelector('[data-testid="explain-first-gain"]')
+          ?.textContent,
+      ).toBe(formatCurrency(firstEnd - PRINCIPAL));
+
+      expect(
+        doc.querySelector('[data-testid="explain-last-start"]')?.textContent,
+      ).toBe(formatCurrency(lastStart));
+      expect(
+        doc.querySelector('[data-testid="explain-last-end"]')?.textContent,
+      ).toBe(formatCurrency(lastEnd));
+      expect(
+        doc.querySelector('[data-testid="explain-last-gain"]')?.textContent,
+      ).toBe(formatCurrency(lastEnd - lastStart));
+
+      // The whole point of the explanation: the final decade outgrows the
+      // first two decades combined.
+      expect(lastEnd - lastStart).toBeGreaterThan(lastStart - PRINCIPAL);
     });
   });
 });
