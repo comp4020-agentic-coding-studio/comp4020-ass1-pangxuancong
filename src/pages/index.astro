@@ -111,7 +111,36 @@ const xTicks = [0, 5, 10, 15, 20, 25, 30];
         class="guess-marker"
       />
       <path data-testid="actual-curve" class="actual-curve is-hidden" d="" />
+      <text
+        data-testid="guess-marker-label"
+        x={CHART_WIDTH - MARGIN.right + 6}
+        y={yForValue(PRINCIPAL)}
+        class="marker-label guess-label"
+        text-anchor="start"
+        dominant-baseline="middle"
+      >
+        ${PRINCIPAL.toLocaleString("en-US")}
+      </text>
+      <text
+        data-testid="actual-curve-label"
+        x={CHART_WIDTH - MARGIN.right + 6}
+        y={yForValue(PRINCIPAL)}
+        class="marker-label actual-label is-hidden"
+        text-anchor="start"
+        dominant-baseline="middle"
+      />
     </svg>
+
+    <ul class="chart-legend" data-testid="chart-legend">
+      <li>
+        <span class="legend-swatch legend-guess"></span>
+        Your guess (linear growth)
+      </li>
+      <li>
+        <span class="legend-swatch legend-actual"></span>
+        Actual growth (compound interest)
+      </li>
+    </ul>
 
     <section data-testid="result" hidden>
       <p>It's actually worth <strong data-testid="actual-value" />.</p>

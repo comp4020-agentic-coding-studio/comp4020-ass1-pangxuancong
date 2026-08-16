@@ -65,6 +65,12 @@ describe("assignment-1: compound-interest predictor", () => {
     const actualCurve = doc.querySelector('[data-testid="actual-curve"]')!;
     const result = doc.querySelector('[data-testid="result"]')!;
     const guessMarker = doc.querySelector('[data-testid="guess-marker"]')!;
+    const guessMarkerLabel = doc.querySelector(
+      '[data-testid="guess-marker-label"]',
+    )!;
+    const actualCurveLabel = doc.querySelector(
+      '[data-testid="actual-curve-label"]',
+    )!;
 
     it("updates the guess readout live, before any reveal", () => {
       slider.value = "5000";
@@ -78,6 +84,11 @@ describe("assignment-1: compound-interest predictor", () => {
       // Before reveal, the marker is a flat readout of the guess level, not
       // a line from the principal — both endpoints sit at the same height.
       expect(guessMarker.getAttribute("y1")).toBe(guessMarker.getAttribute("y2"));
+
+      // The on-chart guess label tracks the same value the marker does, and
+      // the actual-curve label stays hidden until there's a real value for it.
+      expect(guessMarkerLabel.textContent).toBe(formatCurrency(5000));
+      expect(actualCurveLabel.classList.contains("is-hidden")).toBe(true);
     });
 
     it("reveals the true curve and value on the reveal action, and locks the guess", () => {
@@ -87,6 +98,10 @@ describe("assignment-1: compound-interest predictor", () => {
       expect(actualCurve.getAttribute("d")).not.toBe("");
       expect(result.hasAttribute("hidden")).toBe(false);
       expect(slider.disabled).toBe(true);
+
+      expect(actualCurveLabel.classList.contains("is-hidden")).toBe(false);
+      const last = compoundSeries(PRINCIPAL, RATE, YEARS).at(-1)!;
+      expect(actualCurveLabel.textContent).toBe(formatCurrency(last.value));
     });
 
     it("replaces the flat guess marker with a linear-growth line pinned to the real principal", () => {

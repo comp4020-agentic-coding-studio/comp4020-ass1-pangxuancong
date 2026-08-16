@@ -11,7 +11,9 @@ export const MAX_GUESS = 20000;
 
 export const CHART_WIDTH = 600;
 export const CHART_HEIGHT = 320;
-export const MARGIN = { top: 16, right: 16, bottom: 32, left: 64 };
+// Extra right margin makes room for the on-chart value labels next to each
+// line's year-30 endpoint.
+export const MARGIN = { top: 16, right: 60, bottom: 32, left: 64 };
 export const PLOT_WIDTH = CHART_WIDTH - MARGIN.left - MARGIN.right;
 export const PLOT_HEIGHT = CHART_HEIGHT - MARGIN.top - MARGIN.bottom;
 

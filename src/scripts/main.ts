@@ -13,32 +13,75 @@ function setText(el: HTMLElement | null, text: string): void {
   if (el) el.textContent = text;
 }
 
-// Draws the actual-curve path stroke over time rather than popping it in at
-// full length, so a visitor can watch the growth happen instead of just
-// reading a finished chart. JSDOM has no SVG geometry engine, so
-// getTotalLength() throws there; falling back to an instant reveal keeps the
-// spec suite (which never runs a real animation frame) correct either way.
-function animateCurveDraw(path: SVGPathElement): void {
+const REVEAL_DURATION_MS = 1600;
+
+function easeOutCubic(t: number): number {
+  return 1 - (1 - t) ** 3;
+}
+
+// Draws the actual-curve path stroke over time, and swings the guess line
+// from its flat pre-reveal reading up to the linear-growth line at the same
+// time, so a visitor watches the real (compound) and assumed (linear) paths
+// diverge instead of seeing a finished chart pop in. Driven by a manual rAF
+// loop rather than a CSS transition: a CSS transition on stroke-dashoffset
+// only animates reliably if the browser paints the "undrawn" state before
+// the "drawn" one is applied, which a synchronous style write followed by a
+// same-frame change doesn't guarantee. A hand-rolled loop sidesteps that
+// entirely and is also easy to keep both lines in lockstep.
+//
+// JSDOM has no SVG geometry engine, so getTotalLength() throws there (and it
+// has no requestAnimationFrame in this project's Vitest setup); either gap
+// falls through to setting the final state directly, which is what the spec
+// suite asserts on.
+function animateReveal(
+  actualCurve: SVGPathElement,
+  guessMarker: SVGLineElement,
+  guessMarkerFromY1: number,
+  guessMarkerToY1: number,
+): void {
+  const finish = (): void => {
+    actualCurve.style.strokeDasharray = "";
+    actualCurve.style.strokeDashoffset = "";
+    guessMarker.setAttribute("y1", String(guessMarkerToY1));
+  };
+
+  const view = actualCurve.ownerDocument.defaultView;
+  const raf = view?.requestAnimationFrame?.bind(view);
+
   let length: number;
   try {
-    length = path.getTotalLength();
+    length = actualCurve.getTotalLength();
   } catch {
+    finish();
     return;
   }
-  if (!Number.isFinite(length) || length <= 0) return;
-
-  path.style.strokeDasharray = `${length}`;
-  path.style.strokeDashoffset = `${length}`;
-
-  const view = path.ownerDocument.defaultView;
-  const raf = view?.requestAnimationFrame?.bind(view);
-  if (!raf) {
-    path.style.strokeDashoffset = "0";
+  if (!raf || !view || !Number.isFinite(length) || length <= 0) {
+    finish();
     return;
   }
-  raf(() => {
-    path.style.strokeDashoffset = "0";
-  });
+
+  actualCurve.style.strokeDasharray = `${length}`;
+  actualCurve.style.strokeDashoffset = `${length}`;
+
+  const start = view.performance.now();
+  const step = (): void => {
+    const t = Math.min(1, (view.performance.now() - start) / REVEAL_DURATION_MS);
+    const eased = easeOutCubic(t);
+
+    actualCurve.style.strokeDashoffset = `${length * (1 - eased)}`;
+    guessMarker.setAttribute(
+      "y1",
+      String(guessMarkerFromY1 + (guessMarkerToY1 - guessMarkerFromY1) * eased),
+    );
+
+    if (t < 1) {
+      raf(step);
+    } else {
+      finish();
+    }
+  };
+
+  raf(step);
 }
 
 // Exported so spec/assignment-1.test.ts can wire a JSDOM document directly,
@@ -63,6 +106,12 @@ export function wirePredictor(doc: Document): void {
     '[data-testid="actual-value"]',
   );
   const result = doc.querySelector<HTMLElement>('[data-testid="result"]');
+  const guessMarkerLabel = doc.querySelector<SVGTextElement>(
+    '[data-testid="guess-marker-label"]',
+  );
+  const actualCurveLabel = doc.querySelector<SVGTextElement>(
+    '[data-testid="actual-curve-label"]',
+  );
   const firstStart = doc.querySelector<HTMLElement>(
     '[data-testid="explain-first-start"]',
   );
@@ -89,6 +138,11 @@ export function wirePredictor(doc: Document): void {
     const y = String(yForValue(guess));
     guessMarker.setAttribute("y1", y);
     guessMarker.setAttribute("y2", y);
+
+    if (guessMarkerLabel) {
+      guessMarkerLabel.textContent = formatCurrency(guess);
+      guessMarkerLabel.setAttribute("y", y);
+    }
   }
 
   slider?.addEventListener("input", updateGuess);
@@ -113,15 +167,25 @@ export function wirePredictor(doc: Document): void {
 
     actualCurve.setAttribute("d", d);
     actualCurve.classList.remove("is-hidden");
-    animateCurveDraw(actualCurve);
     actualValue.textContent = formatCurrency(last.value);
 
-    // The guess line stops reading as "your flat guess level" and becomes
-    // the linear-growth path a visitor implicitly assumed: a straight line
-    // from the real starting principal to their guess at year 30, laid over
-    // the real exponential curve so the gap between the two is the point.
-    guessMarker.setAttribute("y1", String(yForValue(PRINCIPAL)));
-    guessMarker.setAttribute("y2", String(yForValue(guess)));
+    if (actualCurveLabel) {
+      actualCurveLabel.textContent = formatCurrency(last.value);
+      actualCurveLabel.setAttribute("y", String(yForValue(last.value)));
+      actualCurveLabel.classList.remove("is-hidden");
+    }
+
+    // The guess line stops reading as "your flat guess level" and animates
+    // into the linear-growth path a visitor implicitly assumed: a straight
+    // line from the real starting principal to their guess at year 30, laid
+    // over the real exponential curve so the gap between the two is the
+    // point. It swings into place in step with the curve drawing in below.
+    animateReveal(
+      actualCurve,
+      guessMarker,
+      yForValue(guess),
+      yForValue(PRINCIPAL),
+    );
 
     const firstDecadeEnd = valueAtYear(PRINCIPAL, RATE, 10);
     const lastDecadeStart = valueAtYear(PRINCIPAL, RATE, 20);
