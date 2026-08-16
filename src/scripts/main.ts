@@ -48,6 +48,9 @@ function animateReveal(
 
   const view = actualCurve.ownerDocument.defaultView;
   const raf = view?.requestAnimationFrame?.bind(view);
+  const reducedMotion = view?.matchMedia?.(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
 
   let length: number;
   try {
@@ -56,7 +59,7 @@ function animateReveal(
     finish();
     return;
   }
-  if (!raf || !view || !Number.isFinite(length) || length <= 0) {
+  if (!raf || !view || reducedMotion || !Number.isFinite(length) || length <= 0) {
     finish();
     return;
   }
@@ -193,6 +196,18 @@ export function wirePredictor(doc: Document): void {
 
     result.removeAttribute("hidden");
     slider.disabled = true;
+    revealButton.disabled = true;
+
+    // Reveal the result a frame late so the browser paints the pre-fade
+    // state first — same reason animateReveal above drives strokeDashoffset
+    // by hand rather than trusting a same-tick CSS transition to catch it.
+    const view = result.ownerDocument.defaultView;
+    const raf = view?.requestAnimationFrame?.bind(view);
+    if (raf) {
+      raf(() => raf(() => result.classList.add("is-revealed")));
+    } else {
+      result.classList.add("is-revealed");
+    }
   });
 
   doc.body.dataset.ready = "true";
