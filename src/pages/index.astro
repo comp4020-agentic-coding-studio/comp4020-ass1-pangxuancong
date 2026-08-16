@@ -21,7 +21,6 @@ import {
   yForValue,
 } from "../scripts/compound";
 
-const yTicks = [0, 5000, 10000, 15000, 20000];
 const xTicks = [0, 5, 10, 15, 20, 25, 30];
 
 const exploreSeries = compoundSeries(
@@ -34,10 +33,9 @@ const exploreMaxValue = exploreLast.value;
 const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue);
 ---
 
-<Layout title="Why we underestimate compound interest">
+<Layout title="Compound Interest">
   <header>
     <nav aria-label="Primary">
-      <a href="./">Home</a>
       <label class="theme-toggle" for="theme-toggle">
         <input type="checkbox" id="theme-toggle" data-testid="theme-toggle" />
         <span class="theme-toggle-track" aria-hidden="true"></span>
@@ -46,69 +44,56 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
     </nav>
   </header>
   <main>
-    <h1>Why we underestimate compound interest</h1>
+    <p class="kicker-top">An Interactive Explainer</p>
+    <h1>Compound Interest</h1>
+    <p class="deck">
+      Most people badly misjudge how compounding works over decades. Here's
+      the test: ${PRINCIPAL.toLocaleString("en-US")} invested at {RATE * 100}%
+      a year, left untouched for {YEARS} years — guess what it's worth before
+      you scroll on.
+    </p>
 
     <div class="stage stage-predict">
-      <span class="stage-kicker">Step 1 &middot; Predict</span>
-      <p class="lede">
-        ${PRINCIPAL.toLocaleString("en-US")} invested at {RATE * 100}% a year,
-        left untouched for {YEARS} years. Before you scroll on: guess what
-        it's worth.
-      </p>
-
-      <section data-testid="predictor">
-        <label for="guess-slider" class="guess-row">
-          <span>Your guess</span>
-          <output for="guess-slider" id="guess-value" data-testid="guess-value"
-            >${PRINCIPAL.toLocaleString("en-US")}</output
-          >
-        </label>
-        <input
-          type="range"
-          id="guess-slider"
-          data-testid="guess-slider"
-          min="0"
-          max="20000"
-          step="100"
-          value={PRINCIPAL}
-        />
-        <button type="button" data-testid="reveal-button">Reveal</button>
-      </section>
-    </div>
-
-    <hr class="stage-divider" />
-
-    <div class="stage stage-reveal">
-      <span class="stage-kicker">Step 2 &middot; Reveal and compare</span>
-      <div class="chart-figure">
+      <span class="stage-kicker">Predict</span>
+      <div class="predict-layout">
+        <div class="predict-side">
+          <section data-testid="predictor">
+            <label for="guess-slider" class="guess-row">
+              <span>Your guess</span>
+              <output for="guess-slider" id="guess-value" data-testid="guess-value"
+                >${PRINCIPAL.toLocaleString("en-US")}</output
+              >
+            </label>
+            <input
+              type="range"
+              id="guess-slider"
+              data-testid="guess-slider"
+              min="0"
+              max="20000"
+              step="100"
+              value={PRINCIPAL}
+            />
+            <button type="button" data-testid="reveal-button">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"
+                  stroke-linejoin="round"
+                  stroke-linecap="round"
+                />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>Reveal</span>
+            </button>
+          </section>
+        </div>
+        <div class="predict-visual">
+          <div class="chart-figure">
     <svg
       data-testid="growth-chart"
       viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
       role="img"
       aria-label={`Growth of $${PRINCIPAL} at ${RATE * 100}% over ${YEARS} years, compared to your guess`}
     >
-      {
-        yTicks.map((tick) => (
-          <g>
-            <line
-              x1={MARGIN.left}
-              y1={yForValue(tick)}
-              x2={CHART_WIDTH - MARGIN.right}
-              y2={yForValue(tick)}
-              class="gridline"
-            />
-            <text
-              x={MARGIN.left - 8}
-              y={yForValue(tick)}
-              class="tick-label"
-              text-anchor="end"
-              dominant-baseline="middle"
-            >
-              ${tick / 1000}k
-            </text>
-          </g>
-        ))
-      }
       {
         xTicks.map((year) => (
           <text
@@ -181,117 +166,125 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
         dominant-baseline="middle"
       />
     </svg>
-      </div>
-
-      <ul class="chart-legend" data-testid="chart-legend">
-        <li>
-          <span class="legend-swatch legend-guess"></span>
-          Your guess (linear growth)
-        </li>
-        <li>
-          <span class="legend-swatch legend-actual"></span>
-          Actual growth (compound interest)
-        </li>
-      </ul>
-
-      <section data-testid="result" hidden>
-        <p class="result-value">
-          It's actually worth <strong data-testid="actual-value" />.
-        </p>
-        <div data-testid="explanation" class="result-detail">
-          <p data-testid="explain-principle" class="result-principle">
-            We tend to imagine growth as adding a similar amount each year.
-            Compound growth adds a similar percentage to an ever-larger base.
-          </p>
-          <div class="decade-grid">
-            <p data-testid="explain-first-decade" class="decade">
-              First 10 years: <span data-testid="explain-first-start" /> →
-              <span data-testid="explain-first-end" /><br />
-              gain: +<span data-testid="explain-first-gain" />
-            </p>
-            <p data-testid="explain-last-decade" class="decade">
-              Final 10 years: <span data-testid="explain-last-start" /> →
-              <span data-testid="explain-last-end" /><br />
-              gain: +<span data-testid="explain-last-gain" />
-            </p>
           </div>
-          <p data-testid="explain-callout" class="result-callout">
-            The last 10 years create more growth than the first 20 years
-            combined.
-          </p>
+
+          <ul class="chart-legend" data-testid="chart-legend">
+            <li>
+              <span class="legend-swatch legend-guess"></span>
+              Your guess (linear growth)
+            </li>
+            <li>
+              <span class="legend-swatch legend-actual"></span>
+              Actual growth (compound interest)
+            </li>
+          </ul>
+
+          <section data-testid="result" hidden>
+            <p class="result-value">
+              It's actually worth <strong data-testid="actual-value" />.
+            </p>
+            <div data-testid="explanation" class="result-detail">
+              <p data-testid="explain-principle" class="result-principle">
+                We tend to imagine growth as adding a similar amount each year.
+                Compound growth adds a similar percentage to an ever-larger base.
+              </p>
+              <div class="decade-grid">
+                <p data-testid="explain-first-decade" class="decade">
+                  First 10 years: <span data-testid="explain-first-start" /> →
+                  <span data-testid="explain-first-end" /><br />
+                  gain: +<span data-testid="explain-first-gain" />
+                </p>
+                <p data-testid="explain-last-decade" class="decade">
+                  Final 10 years: <span data-testid="explain-last-start" /> →
+                  <span data-testid="explain-last-end" /><br />
+                  gain: +<span data-testid="explain-last-gain" />
+                </p>
+              </div>
+              <p data-testid="explain-callout" class="result-callout">
+                The last 10 years create more growth than the first 20 years
+                combined.
+              </p>
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
     </div>
 
     <hr class="stage-divider" />
 
     <div class="stage stage-mechanism">
-      <span class="stage-kicker">Step 3 &middot; The mechanism</span>
+      <span class="stage-kicker">The mechanism</span>
       <section data-testid="mechanism">
         <h2>Why our intuition gets this wrong</h2>
-        <p>
-          When people estimate long-term growth, they often imagine something
-          close to a straight line: roughly the same kind of increase happening
-          again and again. That feels natural because many everyday changes
-          behave approximately that way.
-        </p>
-        <p>
-          Compound interest works differently. Each year's return is added to
-          the balance, so the next year's return is earned on a larger base. The
-          percentage may stay the same, but the amount produced by that
-          percentage keeps increasing.
-        </p>
-        <p>
-          This is why compound growth often looks surprisingly slow at first and
-          surprisingly large later. We tend to think in added amounts, while
-          compounding works through repeated percentage growth on an
-          ever-growing total.
-        </p>
-        <ul class="mechanism-callouts">
-          <li class="mechanism-contrast">
-            <strong>Linear intuition asks:</strong> "How much gets added each year?"
-          </li>
-          <li class="mechanism-contrast">
-            <strong>Compound growth asks:</strong> "What is the current total growing on?"
-          </li>
-          <li class="mechanism-summary">The percentage stays the same, but the base keeps changing.</li>
-        </ul>
+        <div class="mechanism-layout">
+          <div class="mechanism-text">
+            <p>
+              When people estimate long-term growth, they often imagine something
+              close to a straight line: roughly the same kind of increase happening
+              again and again. That feels natural because many everyday changes
+              behave approximately that way.
+            </p>
+            <p>
+              Compound interest works differently. Each year's return is added to
+              the balance, so the next year's return is earned on a larger base. The
+              percentage may stay the same, but the amount produced by that
+              percentage keeps increasing.
+            </p>
+            <p>
+              This is why compound growth often looks surprisingly slow at first and
+              surprisingly large later. We tend to think in added amounts, while
+              compounding works through repeated percentage growth on an
+              ever-growing total.
+            </p>
+          </div>
+          <ul class="mechanism-callouts">
+            <li class="mechanism-contrast">
+              <strong>Linear intuition asks:</strong> "How much gets added each year?"
+            </li>
+            <li class="mechanism-contrast">
+              <strong>Compound growth asks:</strong> "What is the current total growing on?"
+            </li>
+            <li class="mechanism-summary">The percentage stays the same, but the base keeps changing.</li>
+          </ul>
+        </div>
       </section>
     </div>
 
     <hr class="stage-divider" />
 
     <div class="stage stage-formula">
-      <span class="stage-kicker">Step 4 &middot; The formula</span>
+      <span class="stage-kicker">The formula</span>
       <section data-testid="formula">
         <h2>The formula behind the curve</h2>
         <div class="formula-layout">
-          <p class="formula-expression">
-            A = P(1 + <span class="formula-var formula-var-r" data-testid="formula-var-r">r</span>)<sup
-              ><span class="formula-var formula-var-t" data-testid="formula-var-t">t</span></sup
-            >
+          <div class="formula-primary">
+            <p class="formula-expression">
+              A = P(1 + <span class="formula-var formula-var-r" data-testid="formula-var-r">r</span>)<sup
+                ><span class="formula-var formula-var-t" data-testid="formula-var-t">t</span></sup
+              >
+            </p>
+            <dl class="formula-legend">
+              <div><dt>P</dt><dd>starting principal</dd></div>
+              <div><dt class="formula-var formula-var-r">r</dt><dd>annual return rate</dd></div>
+              <div><dt class="formula-var formula-var-t">t</dt><dd>time in years</dd></div>
+              <div><dt>A</dt><dd>final amount</dd></div>
+            </dl>
+          </div>
+          <p class="formula-note">
+            The return rate <span class="formula-var formula-var-r">r</span> determines
+            how strongly the balance grows each year. Time <span class="formula-var formula-var-t">t</span>
+            determines how many times that growth is allowed to compound. Each
+            additional year applies the same percentage to a balance that has
+            already grown.
           </p>
-          <dl class="formula-legend">
-            <div><dt>P</dt><dd>starting principal</dd></div>
-            <div><dt class="formula-var formula-var-r">r</dt><dd>annual return rate</dd></div>
-            <div><dt class="formula-var formula-var-t">t</dt><dd>time in years</dd></div>
-            <div><dt>A</dt><dd>final amount</dd></div>
-          </dl>
         </div>
-        <p>
-          The return rate <span class="formula-var formula-var-r">r</span> determines
-          how strongly the balance grows each year. Time <span class="formula-var formula-var-t">t</span>
-          determines how many times that growth is allowed to compound. Each
-          additional year applies the same percentage to a balance that has
-          already grown.
-        </p>
       </section>
     </div>
 
     <hr class="stage-divider" />
 
     <div class="stage stage-explore">
-      <span class="stage-kicker">Step 5 &middot; Explore</span>
+      <span class="stage-kicker">Explore</span>
       <section data-testid="explore">
         <h2>Explore it yourself</h2>
         <p>
@@ -299,6 +292,8 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
           steeply. Longer <span class="formula-var-t">t</span> gives compounding
           more time to act on an increasingly large base.
         </p>
+        <div class="explore-layout">
+          <div class="explore-side">
         <div class="explore-controls">
         <label for="explore-rate-slider">
           <span>Annual return (<span class="formula-var-r">r</span>):</span>
@@ -342,6 +337,8 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
             >{formatCurrency(exploreLast.value)}</strong
           >
         </p>
+          </div>
+          <div class="explore-visual">
         <div class="chart-figure">
       <svg
         data-testid="explore-chart"
@@ -351,26 +348,17 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
       >
         {
           TICK_FRACTIONS.map((fraction) => (
-            <g>
-              <line
-                x1={MARGIN.left}
-                y1={MARGIN.top + (CHART_HEIGHT - MARGIN.top - MARGIN.bottom) * (1 - fraction)}
-                x2={CHART_WIDTH - MARGIN.right}
-                y2={MARGIN.top + (CHART_HEIGHT - MARGIN.top - MARGIN.bottom) * (1 - fraction)}
-                class="gridline"
-              />
-              <text
-                data-testid="explore-y-tick-label"
-                data-fraction={fraction}
-                x={MARGIN.left - 8}
-                y={MARGIN.top + (CHART_HEIGHT - MARGIN.top - MARGIN.bottom) * (1 - fraction)}
-                class="tick-label"
-                text-anchor="end"
-                dominant-baseline="middle"
-              >
-                {formatCurrency(exploreMaxValue * fraction)}
-              </text>
-            </g>
+            <text
+              data-testid="explore-y-tick-label"
+              data-fraction={fraction}
+              x={MARGIN.left - 8}
+              y={MARGIN.top + (CHART_HEIGHT - MARGIN.top - MARGIN.bottom) * (1 - fraction)}
+              class="tick-label"
+              text-anchor="end"
+              dominant-baseline="middle"
+            >
+              {formatCurrency(exploreMaxValue * fraction)}
+            </text>
           ))
         }
         {
@@ -425,6 +413,8 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
           d={explorePathD}
         />
       </svg>
+        </div>
+          </div>
         </div>
       </section>
     </div>

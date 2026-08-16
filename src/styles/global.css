@@ -38,9 +38,15 @@
   --space-8: 4.5rem;
   --space-9: 6rem;
 
-  /* Prose stays narrow for readability; figures/controls get more room. */
-  --measure: 34rem;
-  --content-width: 40rem;
+  /* Editorial width system: prose stays a comfortable reading measure while
+     figures, interactions and the page shell each get their own, wider tier —
+     so desktop composition varies by content type instead of every element
+     sharing one narrow column. */
+  --measure: 45rem; /* body copy + deck: ~720px, ~65-75 characters */
+  --width-block: 40rem; /* mechanism's two-column callout block: unchanged */
+  --width-interactive: 55rem; /* predictor panel, formula composition: ~880px */
+  --width-visual: 65rem; /* charts: ~1040px */
+  --content-width: 75rem; /* overall page shell (main, header): ~1200px */
 }
 
 /* "Night edition" of the same paper: warm charcoal instead of pure black,
@@ -93,12 +99,16 @@ body {
   font-size: 1.0625rem;
   line-height: 1.65;
   color: var(--color-ink);
-  background: var(--color-bg);
+  background-color: var(--color-bg);
+
+  /* A faint fibre grain, not a texture prop: fractal noise at ~2% alpha reads
+     as printed paper at a glance and disappears entirely past arm's length. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 @media (width <= 30rem) {
   body {
-    padding: var(--space-5) var(--space-4) var(--space-7);
+    padding: var(--space-5) var(--space-5) var(--space-7);
 
     /* Georgia reads a touch smaller than the system sans at the same size,
        so the mobile bump is deliberate, not a blanket zoom. */
@@ -120,12 +130,13 @@ body {
 main {
   max-width: var(--content-width);
   margin: 0 auto;
+  counter-reset: stage;
 }
 
 header nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   max-width: var(--content-width);
   margin: 0 auto var(--space-6);
   font-family: var(--font-sans);
@@ -208,11 +219,35 @@ h2 {
   letter-spacing: -0.01em;
 }
 
+/* The nameplate line: a small editorial section tag above the headline,
+   the same device a Sunday feature uses to say what desk this ran from. */
+.kicker-top {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-link);
+}
+
 h1 {
-  max-width: 20ch;
-  font-size: clamp(1.9rem, 1.4rem + 2.2vw, 2.9rem);
-  margin: 0 0 var(--space-5);
+  max-width: 22ch;
+  font-size: clamp(2.1rem, 1.5rem + 2.8vw, 3.4rem);
+  margin: 0 0 var(--space-4);
   text-wrap: balance;
+}
+
+/* The deck: clarifies the premise and invites the interaction, distinct
+   from body copy in both size and voice, the way a standfirst sits between
+   headline and article. */
+.deck {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-8);
+  font-size: clamp(1.15rem, 1.05rem + 0.35vw, 1.35rem);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
 }
 
 h2 {
@@ -232,14 +267,6 @@ p {
   font-family: var(--font-serif);
 }
 
-.lede {
-  max-width: var(--measure);
-  margin: var(--space-4) 0 var(--space-6);
-  color: var(--color-ink-muted);
-  font-size: 1.1rem;
-  font-style: italic;
-}
-
 /* Stage structure -------------------------------------------------- */
 
 .stage {
@@ -250,12 +277,13 @@ p {
   margin-top: var(--space-6);
 }
 
-/* An editorial rubric, not a workflow label: a short rule stands in for the
-   little masthead marks that open a section in print. */
+/* An editorial rubric, not a workflow label: a leading, auto-numbered
+   chapter mark stands in for the little masthead numerals that open a
+   section in print, rather than a "Step N" app-onboarding label. */
 .stage-kicker {
   display: flex;
-  align-items: center;
-  gap: 0.6em;
+  align-items: baseline;
+  gap: 0.5em;
   margin-bottom: var(--space-3);
   font-family: var(--font-sans);
   font-size: 0.75rem;
@@ -263,14 +291,15 @@ p {
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--color-ink-muted);
+  counter-increment: stage;
 }
 
 .stage-kicker::before {
-  content: "";
-  flex: none;
-  width: 1.5rem;
-  height: 2px;
-  background: var(--color-link);
+  content: counter(stage, decimal-leading-zero) "\2014";
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: normal;
+  color: var(--color-link);
 }
 
 /* border-style: double needs a few px of width to render as two rules; used
@@ -302,10 +331,18 @@ section[data-testid="predictor"] {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  max-width: var(--width-interactive);
   margin: var(--space-6) 0 0;
   padding: var(--space-6) 0;
   border-top: 4px double var(--color-ink);
   border-bottom: 1px solid var(--color-border);
+}
+
+@media (width >= 75rem) {
+  section[data-testid="predictor"] {
+    gap: var(--space-6);
+    padding-block: var(--space-7);
+  }
 }
 
 .guess-row {
@@ -344,37 +381,118 @@ input[type="range"]:disabled {
 }
 
 /* A bordered rectangle that inverts on hover — a considered call to action,
-   not a glossy product-marketing pill. */
+   not a glossy product-marketing pill. Sized around its icon rather than
+   its label: the eye glyph is the thing a visitor recognises and reaches
+   for, "Reveal" beside it is confirmation, not the primary read. Drawn in
+   the accent ink (the same rust used for links) so it reads as the page's
+   one deliberate call to action, with a soft lift and icon nudge on hover
+   rather than a flat color-swap. */
 button[data-testid="reveal-button"] {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
   align-self: flex-start;
-  padding: 0.65rem 1.75rem;
-  border: 1.5px solid var(--color-ink);
+  padding: var(--space-3) var(--space-5) var(--space-3) var(--space-3);
+  border: 2px solid var(--color-link);
   border-radius: 0;
-  background: none;
-  color: var(--color-ink);
+  background: var(--color-bg);
+  color: var(--color-link);
   font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  box-shadow: 0 1px 0 0 color-mix(in srgb, var(--color-link) 25%, transparent);
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+button[data-testid="reveal-button"] svg {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  transition: transform 0.2s ease;
 }
 
 button[data-testid="reveal-button"]:disabled {
   opacity: 0.5;
   cursor: default;
+  box-shadow: none;
+}
+
+button[data-testid="reveal-button"]:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
 }
 
 button[data-testid="reveal-button"]:hover:not(:disabled) {
-  background: var(--color-ink);
+  background: var(--color-link);
   color: var(--color-bg);
+  box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--color-link) 55%, transparent);
+  transform: translateY(-2px);
+}
+
+button[data-testid="reveal-button"]:hover:not(:disabled) svg {
+  transform: scale(1.08);
+}
+
+button[data-testid="reveal-button"]:active:not(:disabled) {
+  box-shadow: none;
+  transform: translateY(0);
 }
 
 /* Charts --------------------------------------------------------------- */
 
 .chart-figure {
+  max-width: var(--width-visual);
   margin: var(--space-6) 0;
+}
+
+/* Predict + reveal share one stage now: the guess sits beside the chart it
+   reveals rather than above it, so the click and its result read as one
+   glance on wide desktop. Stays a single stacked column below that — guess
+   and reveal action first, chart and result underneath, both full width. */
+.predict-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.predict-side {
+  min-width: 0;
+}
+
+.predict-visual {
+  min-width: 0;
+}
+
+.predict-visual .chart-figure {
+  margin: var(--space-6) 0 0;
+}
+
+@media (width >= 75rem) {
+  .predict-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-8);
+  }
+
+  .predict-side {
+    flex: 0 0 22rem;
+  }
+
+  .predict-visual {
+    flex: 1 1 auto;
+    max-width: var(--width-visual);
+  }
+
+  .predict-visual .chart-figure {
+    margin-top: 0;
+  }
 }
 
 svg[data-testid="growth-chart"],
@@ -383,11 +501,6 @@ svg[data-testid="explore-chart"] {
   width: 100%;
   height: auto;
   overflow: visible;
-}
-
-.gridline {
-  stroke: var(--color-border);
-  stroke-width: 1;
 }
 
 .axis {
@@ -401,9 +514,14 @@ svg[data-testid="explore-chart"] {
   font-variant-numeric: tabular-nums;
 }
 
+/* No background grid on either chart: direct end-labels and axis captions
+   carry the values instead, so the plot area stays a clean line drawing
+   rather than a spreadsheet-style grid. */
 .axis-caption {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   fill: var(--color-ink-muted);
 }
 
@@ -577,7 +695,7 @@ section[data-testid="mechanism"] p {
 .mechanism-callouts {
   display: grid;
   grid-template-columns: 1fr;
-  max-width: var(--content-width);
+  max-width: var(--width-block);
   margin: var(--space-6) 0 0;
   padding: 0;
   list-style: none;
@@ -634,6 +752,54 @@ section[data-testid="mechanism"] p {
   }
 }
 
+/* Wide desktop: explanatory text on the left, the callouts shrunk into a
+   compact single-column note on the right, echoing the predict/explore
+   stages' left-controls / right-content split. */
+.mechanism-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.mechanism-text {
+  min-width: 0;
+}
+
+@media (width >= 75rem) {
+  .mechanism-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-8);
+  }
+
+  .mechanism-text {
+    flex: 1 1 auto;
+    max-width: var(--measure);
+  }
+
+  .mechanism-callouts {
+    flex: 0 0 17rem;
+    max-width: 17rem;
+    margin: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .mechanism-contrast {
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .mechanism-contrast + .mechanism-contrast {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .mechanism-summary {
+    grid-column: auto;
+    padding: var(--space-2) 0 var(--space-3);
+  }
+}
+
 /* Formula ------------------------------------------------------------ */
 
 section[data-testid="formula"] p {
@@ -646,7 +812,18 @@ section[data-testid="formula"] p {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  max-width: var(--width-interactive);
   margin: var(--space-4) 0 var(--space-5);
+}
+
+/* The expression and its legend stack together as one unit on the left;
+   the explanatory note becomes the right-hand column at the same breakpoint. */
+.formula-primary {
+  min-width: 0;
+}
+
+.formula-note {
+  min-width: 0;
 }
 
 .formula-expression {
@@ -699,17 +876,23 @@ section[data-testid="formula"] p {
 @media (width >= 40rem) {
   .formula-layout {
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-7);
   }
 
-  .formula-expression {
-    flex: none;
+  .formula-primary {
+    flex: 0 0 auto;
   }
 
-  .formula-legend {
+  .formula-note {
     flex: 1;
-    max-width: none;
+    max-width: var(--measure);
+  }
+}
+
+@media (width >= 75rem) {
+  .formula-layout {
+    gap: var(--space-9);
   }
 }
 
@@ -759,6 +942,54 @@ section[data-testid="formula"] p {
   .explore-controls {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-6);
+  }
+}
+
+/* The section that should make the strongest use of desktop width: controls
+   and the live value sit beside the chart rather than above it, so the
+   relationship between "what you set" and "what it draws" reads as one
+   glance instead of a scroll. Stays a single stacked column below the wide
+   desktop tier — controls first, chart underneath, both full width. */
+.explore-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: var(--width-visual);
+}
+
+.explore-side {
+  min-width: 0;
+}
+
+.explore-visual {
+  min-width: 0;
+}
+
+.explore-visual .chart-figure {
+  margin: 0;
+}
+
+@media (width >= 75rem) {
+  .explore-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-7);
+    max-width: none;
+  }
+
+  .explore-side {
+    flex: 0 0 22rem;
+  }
+
+  .explore-visual {
+    flex: 1 1 auto;
+    max-width: var(--width-visual);
+  }
+
+  /* Two sliders side by side reads fine across a full-width panel, but
+     cramped inside this narrower left column — stack them instead. */
+  .explore-side .explore-controls {
+    grid-template-columns: 1fr;
   }
 }
 
