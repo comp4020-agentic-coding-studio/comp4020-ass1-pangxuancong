@@ -3,25 +3,31 @@
 
   --font-sans: system-ui, -apple-system, "Segoe UI", roboto, helvetica, arial,
     sans-serif;
-  --color-bg: #faf9f6;
-  --color-surface: #fff;
-  --color-ink: #1c1b18;
-  --color-ink-muted: #5c5951;
-  --color-border: #ded9cd;
-  --color-border-strong: #c8c2b3;
-  --color-link: #1d4ed8;
-  --color-focus: #1d4ed8;
+
+  /* Editorial serif for everything meant to be read (headlines, body copy,
+     the formula, the reveal number) — the sans stack above is reserved for
+     structural/labeling text (kickers, captions, legends, data figures), so
+     the two faces themselves carry the "headline vs. label" hierarchy. */
+  --font-serif: georgia, cambria, "times new roman", times, serif;
+  --color-bg: #f3efe4;
+  --color-surface: #eae4d3;
+  --color-ink: #211d17;
+  --color-ink-muted: #6b6255;
+  --color-border: #d3c9b0;
+  --color-border-strong: #c2b696;
+  --color-link: #6b2b2b;
+  --color-focus: #6b2b2b;
 
   /* The two threads the first chart contrasts: an assumed, linear guess
      against the real, compounding result. */
-  --color-guess: #b5384a;
-  --color-actual: #1d4ed8;
+  --color-guess: #a8402b;
+  --color-actual: #22406b;
 
   /* r and t get their own pair of accents, distinct from guess/actual above,
      so the formula and the explore sliders read as one system without being
      mistaken for the guess-vs-actual contrast. */
-  --color-r: #0d7a72;
-  --color-t: #a3590a;
+  --color-r: #3f6b52;
+  --color-t: #8a6a1f;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -35,28 +41,41 @@
   /* Prose stays narrow for readability; figures/controls get more room. */
   --measure: 34rem;
   --content-width: 40rem;
-
-  /* Shared breakpoint for the restrained two-column pairings (formula +
-     legend, decade comparison, r/t controls): wide enough that each side
-     still reads as a comfortable column, not a cramped one. */
-  --two-col: 40rem;
 }
 
+/* "Night edition" of the same paper: warm charcoal instead of pure black,
+   the same restrained accents brightened just enough to stay legible —
+   not the neon-on-void look of a generic dark UI. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-bg: #171613;
-    --color-surface: #201f1b;
-    --color-ink: #ece9e2;
-    --color-ink-muted: #a8a397;
-    --color-border: #38352d;
-    --color-border-strong: #4a4638;
-    --color-link: #8ab4ff;
-    --color-focus: #8ab4ff;
-    --color-guess: #ef7d8b;
-    --color-actual: #7fa6ff;
-    --color-r: #4fc2b6;
-    --color-t: #e0a15b;
+    --color-bg: #17140f;
+    --color-surface: #1f1b14;
+    --color-ink: #ece3d0;
+    --color-ink-muted: #a89b83;
+    --color-border: #3a3325;
+    --color-border-strong: #4a4132;
+    --color-link: #d98f7a;
+    --color-focus: #d98f7a;
+    --color-guess: #d1836c;
+    --color-actual: #7f9bcf;
+    --color-r: #82ad93;
+    --color-t: #c9a24f;
   }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #17140f;
+  --color-surface: #1f1b14;
+  --color-ink: #ece3d0;
+  --color-ink-muted: #a89b83;
+  --color-border: #3a3325;
+  --color-border-strong: #4a4132;
+  --color-link: #d98f7a;
+  --color-focus: #d98f7a;
+  --color-guess: #d1836c;
+  --color-actual: #7f9bcf;
+  --color-r: #82ad93;
+  --color-t: #c9a24f;
 }
 
 * {
@@ -80,6 +99,11 @@ body {
 @media (width <= 30rem) {
   body {
     padding: var(--space-5) var(--space-4) var(--space-7);
+
+    /* Georgia reads a touch smaller than the system sans at the same size,
+       so the mobile bump is deliberate, not a blanket zoom. */
+    font-size: 1.125rem;
+    line-height: 1.7;
   }
 
   /* The charts are drawn in a fixed 600x320 viewBox and scaled to fit; on a
@@ -101,6 +125,7 @@ main {
 header nav {
   max-width: var(--content-width);
   margin: 0 auto var(--space-6);
+  font-family: var(--font-sans);
 }
 
 a {
@@ -114,6 +139,7 @@ a {
 
 h1,
 h2 {
+  font-family: var(--font-serif);
   line-height: 1.2;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -121,29 +147,34 @@ h2 {
 
 h1 {
   max-width: 20ch;
-  font-size: clamp(1.75rem, 1.35rem + 1.8vw, 2.5rem);
+  font-size: clamp(1.9rem, 1.4rem + 2.2vw, 2.9rem);
   margin: 0 0 var(--space-5);
+  text-wrap: balance;
 }
 
 h2 {
-  font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.4rem);
+  font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.5rem);
   margin: 0 0 var(--space-3);
 }
 
 /* A single, page-wide paragraph rhythm: every plain paragraph gets the same
    gap to whatever follows it, so "paragraph to paragraph" reads as one
    predictable beat everywhere it appears (mechanism, formula, explore). Rules
-   with their own testid/class (.lede, .result-value, etc.) override this. */
+   with their own testid/class (.lede, .result-value, etc.) override this.
+   Body copy reads in the serif face; labels, captions and data stay in the
+   sans stack via their own rules below. */
 p {
   max-width: var(--measure);
   margin: 0 0 var(--space-4);
+  font-family: var(--font-serif);
 }
 
 .lede {
   max-width: var(--measure);
   margin: var(--space-4) 0 var(--space-6);
   color: var(--color-ink-muted);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
+  font-style: italic;
 }
 
 /* Stage structure -------------------------------------------------- */
@@ -156,9 +187,14 @@ p {
   margin-top: var(--space-6);
 }
 
+/* An editorial rubric, not a workflow label: a short rule stands in for the
+   little masthead marks that open a section in print. */
 .stage-kicker {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
   margin-bottom: var(--space-3);
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.09em;
@@ -166,9 +202,19 @@ p {
   color: var(--color-ink-muted);
 }
 
+.stage-kicker::before {
+  content: "";
+  flex: none;
+  width: 1.5rem;
+  height: 2px;
+  background: var(--color-link);
+}
+
+/* border-style: double needs a few px of width to render as two rules; used
+   here as the page's one recurring "section break" device in print. */
 .stage-divider {
   border: none;
-  border-top: 1px solid var(--color-border);
+  border-top: 4px double var(--color-border-strong);
   margin: var(--space-7) 0 0;
 }
 
@@ -185,15 +231,18 @@ p {
 
 /* Predictor ---------------------------------------------------------- */
 
+/* Framed like a boxed sidebar in print — hairline rules, no fill, no radius —
+   rather than a UI form card. The heavier double rule on top is the same
+   device as .stage-divider, but in the page's ink rather than a muted tone,
+   marking this as the one block everything else waits on. */
 section[data-testid="predictor"] {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
   margin: var(--space-6) 0 0;
-  padding: var(--space-6);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
+  padding: var(--space-6) 0;
+  border-top: 4px double var(--color-ink);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .guess-row {
@@ -201,12 +250,22 @@ section[data-testid="predictor"] {
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
+  font-family: var(--font-sans);
+}
+
+.guess-row > span {
+  font-size: 0.8rem;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
 }
 
 #guess-value {
-  font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
+  font-family: var(--font-serif);
+  font-variant-numeric: oldstyle-nums;
+  font-size: 1.85rem;
+  font-weight: 700;
   color: var(--color-guess);
 }
 
@@ -221,28 +280,32 @@ input[type="range"]:disabled {
   opacity: 0.55;
 }
 
+/* A bordered rectangle that inverts on hover — a considered call to action,
+   not a glossy product-marketing pill. */
 button[data-testid="reveal-button"] {
   align-self: flex-start;
-  padding: 0.7rem 1.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  background: var(--color-ink);
-  color: var(--color-bg);
-  font-family: inherit;
-  font-size: 1rem;
+  padding: 0.65rem 1.75rem;
+  border: 1.5px solid var(--color-ink);
+  border-radius: 0;
+  background: none;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 button[data-testid="reveal-button"]:disabled {
   opacity: 0.5;
   cursor: default;
-  transform: none;
 }
 
 button[data-testid="reveal-button"]:hover:not(:disabled) {
-  transform: translateY(-1px);
+  background: var(--color-ink);
+  color: var(--color-bg);
 }
 
 /* Charts --------------------------------------------------------------- */
@@ -281,15 +344,16 @@ svg[data-testid="explore-chart"] {
   fill: var(--color-ink-muted);
 }
 
+/* A finer, hand-annotated dash rather than a bold UI dash line. */
 .guess-marker {
   stroke: var(--color-guess);
-  stroke-width: 2.5;
-  stroke-dasharray: 7 5;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
 }
 
 .actual-curve {
   stroke: var(--color-actual);
-  stroke-width: 3;
+  stroke-width: 2.5;
   fill: none;
   stroke-linecap: round;
 }
@@ -362,12 +426,12 @@ section[data-testid="result"].is-revealed {
    in the stage, so it's the first thing read once the curve lands. */
 .result-value {
   margin: 0 0 var(--space-6);
-  font-size: clamp(1.4rem, 1.2rem + 1vw, 1.9rem);
+  font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.2rem);
   font-weight: 700;
 }
 
 .result-value strong {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: oldstyle-nums;
   color: var(--color-actual);
 }
 
@@ -381,7 +445,8 @@ section[data-testid="result"].is-revealed {
 }
 
 /* Supporting evidence: the two decades sit side by side once there's room,
-   so the contrast between them is a glance, not a scroll. */
+   so the contrast between them is a glance, not a scroll. Kept in the sans
+   face — this is a data figure, not prose. */
 .decade-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -393,6 +458,7 @@ section[data-testid="result"].is-revealed {
   margin: 0;
   padding-top: var(--space-3);
   border-top: 1px solid var(--color-border);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 0.95rem;
   color: var(--color-ink-muted);
@@ -416,16 +482,27 @@ section[data-testid="result"].is-revealed {
   }
 }
 
-/* Final takeaway: reads as the conclusion of the stage, not another item in
-   the list above it. */
+/* Final takeaway, styled as a print pull-quote: a drop quotation mark and
+   hairline rules above/below, rather than a colored UI accent bar. */
 .result-callout {
   margin: 0;
-  padding: var(--space-4) var(--space-5);
-  border-left: 3px solid var(--color-actual);
-  background: var(--color-surface);
-  font-size: 1.15rem;
-  font-weight: 700;
-  line-height: 1.4;
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 1.3rem;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.result-callout::before {
+  content: "\201C";
+  margin-right: 0.15em;
+  font-size: 2em;
+  font-style: normal;
+  line-height: 0;
+  vertical-align: -0.35em;
+  color: var(--color-border-strong);
 }
 
 /* Mechanism -------------------------------------------------------------- */
@@ -441,26 +518,37 @@ section[data-testid="mechanism"] p {
   margin: var(--space-6) 0 0;
   padding: 0;
   list-style: none;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  overflow: hidden;
+  border-top: 1px solid var(--color-border);
 }
 
 .mechanism-contrast {
-  padding: var(--space-4) var(--space-5);
-  border-top: 1px solid var(--color-border);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-serif);
+  font-style: italic;
 }
 
-.mechanism-contrast:first-child {
-  border-top: none;
+/* The rubric-style label inside each contrast line is the one place this
+   section switches back to the sans/label voice, so "who's asking" reads as
+   structure, not just bold prose. */
+.mechanism-contrast strong {
+  display: block;
+  margin-bottom: 0.3em;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
 }
 
 .mechanism-summary {
-  padding: var(--space-3) var(--space-5) var(--space-4);
-  border-top: 1px solid var(--color-border);
-  color: var(--color-ink-muted);
+  padding: var(--space-3) 0 var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-serif);
   font-style: italic;
+  color: var(--color-ink-muted);
 }
 
 @media (width >= 40rem) {
@@ -469,11 +557,12 @@ section[data-testid="mechanism"] p {
   }
 
   .mechanism-contrast {
-    border-top: none;
+    border-bottom: none;
   }
 
   .mechanism-contrast + .mechanism-contrast {
     border-left: 1px solid var(--color-border);
+    padding-left: var(--space-6);
   }
 
   .mechanism-summary {
@@ -499,8 +588,8 @@ section[data-testid="formula"] p {
 
 .formula-expression {
   margin: 0;
-  font-size: clamp(1.6rem, 1.4rem + 1vw, 2.1rem);
-  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.9rem, 1.5rem + 1.6vw, 2.6rem);
+  font-variant-numeric: oldstyle-nums;
   letter-spacing: 0.01em;
 }
 
@@ -516,12 +605,17 @@ section[data-testid="formula"] p {
   color: var(--color-t);
 }
 
+/* A marginal glossary rather than a boxed legend: a single top rule, sans
+   captions, no card. */
 .formula-legend {
   display: grid;
   grid-template-columns: repeat(2, auto 1fr);
   gap: var(--space-2) var(--space-4);
   max-width: 24rem;
   margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   color: var(--color-ink-muted);
 }
@@ -568,6 +662,7 @@ section[data-testid="formula"] p {
   padding: var(--space-4) 0;
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-sans);
 }
 
 .explore-controls label {
@@ -611,7 +706,7 @@ output {
 
 .explore-final {
   margin: 0 0 var(--space-5);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 400;
 }
 
