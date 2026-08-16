@@ -1,83 +1,94 @@
 # Process overview
 
-<!-- TEMPLATE: this file is a shape to fill in, not a form. Replace everything
-     in it with your own overview, and delete this comment — `pnpm
-     check:evidence` will remind you if it's still here. -->
-
-A reading-guide to how the work came together --- a map to your process, not an
-essay about it. Markers read this file and follow its citations; they don't
-trawl the repo for evidence you didn't point at, so if a moment mattered, cite
-it.
-
-This file is the shape; the course site's
-[assessment page](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#what-you-submit)
-is the requirement, and each brief adds its own word count and moment count.
+A reading-guide to how this came together, not an essay about it.
 
 ## What I built
 
-One paragraph: the thing, and the idea behind it.
+A guess-and-reveal explainer for compound interest: a visitor first guesses
+what $1,000 becomes after 30 years at 10% a year, then reveals the actual
+compound curve against their (almost always too-linear) guess, followed by a
+plain-language explanation of why linear intuition gets this wrong, the
+formula behind the curve, and a live explore chart where they can drag rate
+and years themselves. A light/dark "night edition" toggle and an editorial,
+newspaper-style visual treatment run through the whole page.
 
 ## The moments that mattered
 
-Three or four for an assignment; fewer is fine for a weekly prototype. Keep the
-list short so each moment has room to do all four jobs:
+### 1. An animation that "passed" but never actually played
 
-1. **what happened** --- the problem, or the thing the agent got wrong
-2. **what you did instead of the obvious thing** --- the call you made, and why
-   it beat the obvious one
-3. **how you knew it was right** --- the check you ran, the viewport you looked
-   at, what you read before accepting the diff
-4. **the citation** --- a commit or commit range, a `CLAUDE.md` change, a check
-   that went from red to green, a prompt paired with the commit it produced
+This is the second or third time this exact failure has bitten me this
+course: Claude writes an animation, the build and tests come back green, and
+it reports the work done — without ever having actually watched the
+animation run. Here, the reveal curve was supposed to draw itself in when you
+click Reveal. It didn't. The CSS transition it wrote collapsed into a single
+paint, so the curve just snapped straight to its final shape with nothing
+visible in between, and nothing in the check suite caught that because
+nothing in the check suite looks at a rendered page.
 
-Jobs 2 and 3 are the ones the repo can't tell a reader on its own, so they're
-where the marks are. The strongest moments are the ones where a correction
-landed in the **harness** rather than in another prompt --- a rule added to
-`CLAUDE.md`, a check wired up, an attempt thrown away: re-prompting until it
-passes is the routine case, and changing what the agent works against is the
-skilled one.
+Instead of just re-prompting to fix this one animation, I turned it into a
+standing rule: before writing any animation, clarify duration, trigger, and
+`prefers-reduced-motion` behaviour first; after writing it, verify it in an
+actual browser (devtools or a screenshot) instead of trusting a green build.
+That rule is now in `CLAUDE.md`, so it applies to every animation from here
+on, not just this one.
 
-Cite each moment as a link whose text is the commit hash or range and whose
-target is this repo's commit or compare URL, so a reader clicks straight to the
-evidence:
+[`b20610d`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-pangxuancong/commit/b20610d7527aed0ac8ec16d4a3c79fae74c01092)
+replaced the transition with a manual `requestAnimationFrame` loop and is the
+fix itself;
+[`f5a84ed`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-pangxuancong/commit/f5a84ed410b8cea0a060e5ca840bd1af187059e3)
+is the `CLAUDE.md` rule it produced.
 
-- one commit: [`a1b2c3d`](https://github.com/YOUR-ORG/YOUR-REPO/commit/a1b2c3d)
-- a range:
-  [`a1b2c3d...e4f5a6b`](https://github.com/YOUR-ORG/YOUR-REPO/compare/a1b2c3d...e4f5a6b)
+### 2. A toggle that looked fine and ate its own clicks
 
-To pair a prompt with the commit it produced, quote the prompt (curated, not a
-full transcript) next to the citation:
+Added a light/dark edition switch next to the nav. Visually it was
+indistinguishable from working: track, thumb, and label all rendered
+exactly where they should. It just didn't do anything when clicked.
 
-> the prompt, verbatim
+Rather than trust the screenshot, I ran Playwright click-testing against it
+as part of verification, and that's what actually caught it — the
+visually-hidden checkbox and its visible track had landed on the same paint
+tier inside the flex nav, and the track (later in DOM order) was silently
+eating every click before it reached the input. Fixed with an explicit
+z-index on the input. Looking right and being right turned out to be two
+different questions here, and only one of them shows up in a screenshot.
 
-Screenshots are welcome where one carries the verification better than a
-sentence does. Commit the file to this repo and link it with a **relative**
-path, which is what makes it render on GitHub: `![alt text](docs/before.png)`.
-Images don't count towards the word count and don't replace the citation.
+[`7877107`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-pangxuancong/commit/787710790ccde33911d80d3aa109f06cc07bbbc7)
 
-### A worked moment, for shape
+### 3. The two graded viewports aren't "big" and "small" of the same layout
 
-Delete this section along with the rest of the boilerplate --- it's here to show
-the four jobs in one paragraph, not to be imitated in content.
+First time this one has actually bitten me. While checking the page at the
+two viewports this course marks against — 1920×1080 and 390×844, not
+"responsive in general" — I found two separate real bugs that a generic
+resize test wouldn't have surfaced: the explore section's slider labels
+wrapped awkwardly at 390px width, and at 1920px the y-axis caption
+overlapped the currency tick labels once the sliders were pushed to their
+extreme values. Both fixed.
 
-> The date formatter kept coming back with `toLocaleDateString()` and no locale
-> argument, so the same build rendered differently on my machine and in CI. I'd
-> already re-prompted it twice, which fixed the line but not the habit, so the
-> third time I put the rule in `CLAUDE.md` instead
-> ([`3f9ac21`](https://github.com/YOUR-ORG/YOUR-REPO/commit/3f9ac21)) and added
-> a spec test that fails on a bare `toLocaleDateString`. That's what told me it
-> had actually taken: the test went red against the old code and green against
-> the new, and the next two features it wrote passed it without prompting
-> ([`3f9ac21...b7e0d14`](https://github.com/YOUR-ORG/YOUR-REPO/compare/3f9ac21...b7e0d14)).
+What I'm still deciding is whether this needs a standing rule the way the
+animation bug did. I've drafted one but haven't committed it yet, since this
+is only the first time it's come up and I want to see whether the pattern
+actually repeats before I write a permanent rule against it:
 
-## Before you ship
+> The two target marking viewports are:
+>
+> - Desktop: 1920 × 1080
+> - Phone: 390 × 844
+>
+> Treat these as first-class layouts, not just scaled versions of one
+> another.
+>
+> For 1920 × 1080:
+> - use the available horizontal space intentionally
+> - keep prose narrow for readability
+> - allow charts and major interactive modules to expand substantially wider
+> - avoid the appearance of a mobile-width column floating in the center of a
+>   large screen
+>
+> For 390 × 844:
+> - use a clean single-column layout
+> - keep comfortable side padding
+> - ensure sliders, buttons, charts, legends, formula, and explanatory text
+>   remain readable and usable
+> - do not shrink typography excessively
 
-`pnpm check:evidence` verifies your citations resolve to real commits, that the
-current reflection entry is in `reflections/`, and that your `CLAUDE.md` is
-there --- before a marker ever opens the file. It checks that your map is
-traceable, not that it is good: the marker judges whether your small,
-deliberately chosen set of moments shows real judgement and reflection. A green
-check is not a substitute for that curation.
-
-Images are deliberately not checked, because whether one renders is visible the
-moment you look. Open this file on GitHub and look at it before you ship.
+[`e12ab9c`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-pangxuancong/commit/e12ab9c9751ce66aba3e3ce60fd89b68ecd10ab4)
