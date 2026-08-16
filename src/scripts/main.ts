@@ -1,11 +1,12 @@
 import {
+  MAX_GUESS,
   PRINCIPAL,
   RATE,
   YEARS,
   compoundSeries,
   formatCurrency,
+  pathD,
   valueAtYear,
-  xForYear,
   yForValue,
 } from "./compound";
 
@@ -158,14 +159,7 @@ export function wirePredictor(doc: Document): void {
     const last = series.at(-1);
     if (!last) return;
 
-    const d = series
-      .map(
-        ({ year, value }, index) =>
-          `${index === 0 ? "M" : "L"} ${xForYear(year)} ${yForValue(value)}`,
-      )
-      .join(" ");
-
-    actualCurve.setAttribute("d", d);
+    actualCurve.setAttribute("d", pathD(series, YEARS, MAX_GUESS));
     actualCurve.classList.remove("is-hidden");
     actualValue.textContent = formatCurrency(last.value);
 
@@ -204,6 +198,74 @@ export function wirePredictor(doc: Document): void {
   doc.body.dataset.ready = "true";
 }
 
+// The second chart is a live exploration, not a reveal: it has no hidden
+// state and no guess to lock, so it just recomputes and repaints on every
+// slider input. Tick *positions* never move (see compound.ts's xFor/yFor —
+// a tick drawn at a fixed fraction of the current axis max sits at the same
+// pixel regardless of what that max is), so only label text and the path's
+// `d` need updating here, never DOM structure.
+export function wireExplorer(doc: Document): void {
+  const rateSlider = doc.querySelector<HTMLInputElement>(
+    '[data-testid="explore-rate-slider"]',
+  );
+  const yearsSlider = doc.querySelector<HTMLInputElement>(
+    '[data-testid="explore-years-slider"]',
+  );
+  const rateValue = doc.querySelector<HTMLElement>(
+    '[data-testid="explore-rate-value"]',
+  );
+  const yearsValue = doc.querySelector<HTMLElement>(
+    '[data-testid="explore-years-value"]',
+  );
+  const finalValue = doc.querySelector<HTMLElement>(
+    '[data-testid="explore-final-value"]',
+  );
+  const curve = doc.querySelector<SVGPathElement>(
+    '[data-testid="explore-curve"]',
+  );
+  const yTickLabels = doc.querySelectorAll<SVGTextElement>(
+    '[data-testid="explore-y-tick-label"]',
+  );
+  const xTickLabels = doc.querySelectorAll<SVGTextElement>(
+    '[data-testid="explore-x-tick-label"]',
+  );
+
+  function update(): void {
+    if (!rateSlider || !yearsSlider || !curve) return;
+
+    const rate = Number(rateSlider.value) / 100;
+    const years = Number(yearsSlider.value);
+
+    setText(rateValue, `${rateSlider.value}%`);
+    setText(yearsValue, `${years} ${years === 1 ? "year" : "years"}`);
+
+    const series = compoundSeries(PRINCIPAL, rate, years);
+    const last = series.at(-1);
+    if (!last) return;
+
+    // The axis max is pinned to the curve's own endpoint, so the line always
+    // spans the full plot height exactly — no headroom to compute or clamp.
+    const maxValue = last.value;
+
+    curve.setAttribute("d", pathD(series, years, maxValue));
+    setText(finalValue, formatCurrency(last.value));
+
+    yTickLabels.forEach((el) => {
+      const fraction = Number(el.getAttribute("data-fraction"));
+      el.textContent = formatCurrency(maxValue * fraction);
+    });
+    xTickLabels.forEach((el) => {
+      const fraction = Number(el.getAttribute("data-fraction"));
+      el.textContent = `Yr ${Math.round(years * fraction)}`;
+    });
+  }
+
+  rateSlider?.addEventListener("input", update);
+  yearsSlider?.addEventListener("input", update);
+  update();
+}
+
 if (typeof document !== "undefined") {
   wirePredictor(document);
+  wireExplorer(document);
 }

@@ -48,6 +48,11 @@ svg[data-testid="growth-chart"] {
   fill: #4a4a4a;
 }
 
+.axis-caption {
+  font-size: 0.75rem;
+  fill: #4a4a4a;
+}
+
 .guess-marker {
   stroke: #d1495b;
   stroke-width: 2;
@@ -130,4 +135,64 @@ p[data-testid="explain-callout"] {
   grid-column: 1 / -1;
   margin: 0;
   font-weight: 600;
+}
+
+p[data-testid="explain-principle"] {
+  grid-column: 1 / -1;
+  margin: 0 0 0.25rem;
+}
+
+.mechanism-callouts {
+  padding-left: 1.25rem;
+}
+
+.mechanism-callouts li {
+  margin: 0.35rem 0;
+}
+
+.formula-expression {
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.formula-var {
+  font-weight: 700;
+}
+
+.formula-var-r {
+  color: #0b5fff;
+}
+
+.formula-var-t {
+  color: #d1495b;
+}
+
+.formula-legend {
+  display: grid;
+  grid-template-columns: repeat(2, auto 1fr);
+  gap: 0.25rem 1rem;
+  max-width: 24rem;
+}
+
+.formula-legend div {
+  display: contents;
+}
+
+.formula-legend dt {
+  font-weight: 700;
+}
+
+.formula-legend dd {
+  margin: 0;
+}
+
+.explore-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.explore-controls input[type="range"] {
+  width: 100%;
 }

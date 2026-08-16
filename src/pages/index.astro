@@ -3,16 +3,35 @@ import Layout from "../layouts/Layout.astro";
 import {
   CHART_HEIGHT,
   CHART_WIDTH,
+  EXPLORE_RATE_DEFAULT,
+  EXPLORE_RATE_MAX,
+  EXPLORE_RATE_MIN,
+  EXPLORE_YEARS_DEFAULT,
+  EXPLORE_YEARS_MAX,
+  EXPLORE_YEARS_MIN,
   MARGIN,
   PRINCIPAL,
   RATE,
+  TICK_FRACTIONS,
   YEARS,
+  compoundSeries,
+  formatCurrency,
+  pathD,
   xForYear,
   yForValue,
 } from "../scripts/compound";
 
 const yTicks = [0, 5000, 10000, 15000, 20000];
 const xTicks = [0, 5, 10, 15, 20, 25, 30];
+
+const exploreSeries = compoundSeries(
+  PRINCIPAL,
+  EXPLORE_RATE_DEFAULT,
+  EXPLORE_YEARS_DEFAULT,
+);
+const exploreLast = exploreSeries.at(-1)!;
+const exploreMaxValue = exploreLast.value;
+const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue);
 ---
 
 <Layout title="Why we underestimate compound interest">
@@ -102,6 +121,25 @@ const xTicks = [0, 5, 10, 15, 20, 25, 30];
         y2={CHART_HEIGHT - MARGIN.bottom}
         class="axis"
       />
+      <text
+        data-testid="chart-x-axis-label"
+        x={MARGIN.left + (CHART_WIDTH - MARGIN.left - MARGIN.right) / 2}
+        y={CHART_HEIGHT - 6}
+        class="axis-caption"
+        text-anchor="middle"
+      >
+        Year
+      </text>
+      <text
+        data-testid="chart-y-axis-label"
+        x={14}
+        y={MARGIN.top + (CHART_HEIGHT - MARGIN.top - MARGIN.bottom) / 2}
+        class="axis-caption"
+        text-anchor="middle"
+        transform={`rotate(-90 14 ${MARGIN.top + (CHART_HEIGHT - MARGIN.top - MARGIN.bottom) / 2})`}
+      >
+        Wealth ($)
+      </text>
       <line
         data-testid="guess-marker"
         x1={MARGIN.left}
@@ -145,6 +183,10 @@ const xTicks = [0, 5, 10, 15, 20, 25, 30];
     <section data-testid="result" hidden>
       <p>It's actually worth <strong data-testid="actual-value" />.</p>
       <div data-testid="explanation">
+        <p data-testid="explain-principle">
+          We tend to imagine growth as adding a similar amount each year.
+          Compound growth adds a similar percentage to an ever-larger base.
+        </p>
         <p data-testid="explain-first-decade">
           First 10 years: <span data-testid="explain-first-start" /> →
           <span data-testid="explain-first-end" /><br />
@@ -160,6 +202,189 @@ const xTicks = [0, 5, 10, 15, 20, 25, 30];
           combined.
         </p>
       </div>
+    </section>
+
+    <section data-testid="mechanism">
+      <h2>Why our intuition gets this wrong</h2>
+      <p>
+        When people estimate long-term growth, they often imagine something
+        close to a straight line: roughly the same kind of increase happening
+        again and again. That feels natural because many everyday changes
+        behave approximately that way.
+      </p>
+      <p>
+        Compound interest works differently. Each year's return is added to
+        the balance, so the next year's return is earned on a larger base. The
+        percentage may stay the same, but the amount produced by that
+        percentage keeps increasing.
+      </p>
+      <p>
+        This is why compound growth often looks surprisingly slow at first and
+        surprisingly large later. We tend to think in added amounts, while
+        compounding works through repeated percentage growth on an
+        ever-growing total.
+      </p>
+      <ul class="mechanism-callouts">
+        <li><strong>Linear intuition asks:</strong> "How much gets added each year?"</li>
+        <li><strong>Compound growth asks:</strong> "What is the current total growing on?"</li>
+        <li>The percentage stays the same, but the base keeps changing.</li>
+      </ul>
+    </section>
+
+    <section data-testid="formula">
+      <h2>The formula behind the curve</h2>
+      <p class="formula-expression">
+        A = P(1 + <span class="formula-var formula-var-r" data-testid="formula-var-r">r</span>)<sup
+          ><span class="formula-var formula-var-t" data-testid="formula-var-t">t</span></sup
+        >
+      </p>
+      <dl class="formula-legend">
+        <div><dt>P</dt><dd>starting principal</dd></div>
+        <div><dt>r</dt><dd>annual return rate</dd></div>
+        <div><dt>t</dt><dd>time in years</dd></div>
+        <div><dt>A</dt><dd>final amount</dd></div>
+      </dl>
+      <p>
+        The return rate <span class="formula-var formula-var-r">r</span> determines
+        how strongly the balance grows each year. Time <span class="formula-var formula-var-t">t</span>
+        determines how many times that growth is allowed to compound. Each
+        additional year applies the same percentage to a balance that has
+        already grown.
+      </p>
+    </section>
+
+    <section data-testid="explore">
+      <h2>Explore it yourself</h2>
+      <p>
+        Higher r makes the curve grow more steeply. Longer t gives compounding
+        more time to act on an increasingly large base.
+      </p>
+      <div class="explore-controls">
+        <label for="explore-rate-slider">
+          Annual return (r):
+          <output
+            for="explore-rate-slider"
+            id="explore-rate-value"
+            data-testid="explore-rate-value"
+            >{EXPLORE_RATE_DEFAULT * 100}%</output
+          >
+        </label>
+        <input
+          type="range"
+          id="explore-rate-slider"
+          data-testid="explore-rate-slider"
+          min={EXPLORE_RATE_MIN * 100}
+          max={EXPLORE_RATE_MAX * 100}
+          step="1"
+          value={EXPLORE_RATE_DEFAULT * 100}
+        />
+        <label for="explore-years-slider">
+          Time (t):
+          <output
+            for="explore-years-slider"
+            id="explore-years-value"
+            data-testid="explore-years-value"
+            >{EXPLORE_YEARS_DEFAULT} years</output
+          >
+        </label>
+        <input
+          type="range"
+          id="explore-years-slider"
+          data-testid="explore-years-slider"
+          min={EXPLORE_YEARS_MIN}
+          max={EXPLORE_YEARS_MAX}
+          step="1"
+          value={EXPLORE_YEARS_DEFAULT}
+        />
+      </div>
+      <p>
+        Final amount: <strong data-testid="explore-final-value"
+          >{formatCurrency(exploreLast.value)}</strong
+        >
+      </p>
+      <svg
+        data-testid="explore-chart"
+        viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+        role="img"
+        aria-label={`Growth of $${PRINCIPAL} at the chosen rate over the chosen number of years`}
+      >
+        {
+          TICK_FRACTIONS.map((fraction) => (
+            <g>
+              <line
+                x1={MARGIN.left}
+                y1={MARGIN.top + (CHART_HEIGHT - MARGIN.top - MARGIN.bottom) * (1 - fraction)}
+                x2={CHART_WIDTH - MARGIN.right}
+                y2={MARGIN.top + (CHART_HEIGHT - MARGIN.top - MARGIN.bottom) * (1 - fraction)}
+                class="gridline"
+              />
+              <text
+                data-testid="explore-y-tick-label"
+                data-fraction={fraction}
+                x={MARGIN.left - 8}
+                y={MARGIN.top + (CHART_HEIGHT - MARGIN.top - MARGIN.bottom) * (1 - fraction)}
+                class="tick-label"
+                text-anchor="end"
+                dominant-baseline="middle"
+              >
+                {formatCurrency(exploreMaxValue * fraction)}
+              </text>
+            </g>
+          ))
+        }
+        {
+          TICK_FRACTIONS.map((fraction) => (
+            <text
+              data-testid="explore-x-tick-label"
+              data-fraction={fraction}
+              x={MARGIN.left + (CHART_WIDTH - MARGIN.left - MARGIN.right) * fraction}
+              y={CHART_HEIGHT - MARGIN.bottom + 18}
+              class="tick-label"
+              text-anchor="middle"
+            >
+              Yr {Math.round(EXPLORE_YEARS_DEFAULT * fraction)}
+            </text>
+          ))
+        }
+        <line
+          x1={MARGIN.left}
+          y1={MARGIN.top}
+          x2={MARGIN.left}
+          y2={CHART_HEIGHT - MARGIN.bottom}
+          class="axis"
+        />
+        <line
+          x1={MARGIN.left}
+          y1={CHART_HEIGHT - MARGIN.bottom}
+          x2={CHART_WIDTH - MARGIN.right}
+          y2={CHART_HEIGHT - MARGIN.bottom}
+          class="axis"
+        />
+        <text
+          data-testid="explore-chart-x-axis-label"
+          x={MARGIN.left + (CHART_WIDTH - MARGIN.left - MARGIN.right) / 2}
+          y={CHART_HEIGHT - 6}
+          class="axis-caption"
+          text-anchor="middle"
+        >
+          Year
+        </text>
+        <text
+          data-testid="explore-chart-y-axis-label"
+          x={14}
+          y={MARGIN.top + (CHART_HEIGHT - MARGIN.top - MARGIN.bottom) / 2}
+          class="axis-caption"
+          text-anchor="middle"
+          transform={`rotate(-90 14 ${MARGIN.top + (CHART_HEIGHT - MARGIN.top - MARGIN.bottom) / 2})`}
+        >
+          Wealth ($)
+        </text>
+        <path
+          data-testid="explore-curve"
+          class="actual-curve"
+          d={explorePathD}
+        />
+      </svg>
     </section>
   </main>
   <script src="../scripts/main.ts"></script>
