@@ -30,7 +30,8 @@ pnpm install
 pnpm dev        # local dev server
 pnpm check      # most of what CI runs (links, secrets, evidence and deploy are CI-only)
 pnpm build      # produce dist/ (what gets deployed)
-pnpm dlx linkinator ./dist --silent   # reproduce CI's links check before you push
+pnpm preview    # serve dist/ under the Pages base path, then in another shell:
+pnpm dlx linkinator http://localhost:4321/<repo>/ --recurse --silent   # reproduce CI's links check
 ```
 
 `mise` is the course's recommended runtime manager. If you use another manager
