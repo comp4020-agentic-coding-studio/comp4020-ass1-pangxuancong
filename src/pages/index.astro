@@ -43,7 +43,7 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
   <main>
     <h1>Why we underestimate compound interest</h1>
 
-    <div class="stage">
+    <div class="stage stage-predict">
       <span class="stage-kicker">Step 1 &middot; Predict</span>
       <p class="lede">
         ${PRINCIPAL.toLocaleString("en-US")} invested at {RATE * 100}% a year,
@@ -73,7 +73,7 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
 
     <hr class="stage-divider" />
 
-    <div class="stage">
+    <div class="stage stage-reveal">
       <span class="stage-kicker">Step 2 &middot; Reveal and compare</span>
       <div class="chart-figure">
     <svg
@@ -190,23 +190,27 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
       </ul>
 
       <section data-testid="result" hidden>
-        <p>It's actually worth <strong data-testid="actual-value" />.</p>
-        <div data-testid="explanation">
-          <p data-testid="explain-principle">
+        <p class="result-value">
+          It's actually worth <strong data-testid="actual-value" />.
+        </p>
+        <div data-testid="explanation" class="result-detail">
+          <p data-testid="explain-principle" class="result-principle">
             We tend to imagine growth as adding a similar amount each year.
             Compound growth adds a similar percentage to an ever-larger base.
           </p>
-          <p data-testid="explain-first-decade">
-            First 10 years: <span data-testid="explain-first-start" /> →
-            <span data-testid="explain-first-end" /><br />
-            gain: +<span data-testid="explain-first-gain" />
-          </p>
-          <p data-testid="explain-last-decade">
-            Final 10 years: <span data-testid="explain-last-start" /> →
-            <span data-testid="explain-last-end" /><br />
-            gain: +<span data-testid="explain-last-gain" />
-          </p>
-          <p data-testid="explain-callout">
+          <div class="decade-grid">
+            <p data-testid="explain-first-decade" class="decade">
+              First 10 years: <span data-testid="explain-first-start" /> →
+              <span data-testid="explain-first-end" /><br />
+              gain: +<span data-testid="explain-first-gain" />
+            </p>
+            <p data-testid="explain-last-decade" class="decade">
+              Final 10 years: <span data-testid="explain-last-start" /> →
+              <span data-testid="explain-last-end" /><br />
+              gain: +<span data-testid="explain-last-gain" />
+            </p>
+          </div>
+          <p data-testid="explain-callout" class="result-callout">
             The last 10 years create more growth than the first 20 years
             combined.
           </p>
@@ -216,7 +220,7 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
 
     <hr class="stage-divider" />
 
-    <div class="stage">
+    <div class="stage stage-mechanism">
       <span class="stage-kicker">Step 3 &middot; The mechanism</span>
       <section data-testid="mechanism">
         <h2>Why our intuition gets this wrong</h2>
@@ -239,30 +243,36 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
           ever-growing total.
         </p>
         <ul class="mechanism-callouts">
-          <li><strong>Linear intuition asks:</strong> "How much gets added each year?"</li>
-          <li><strong>Compound growth asks:</strong> "What is the current total growing on?"</li>
-          <li>The percentage stays the same, but the base keeps changing.</li>
+          <li class="mechanism-contrast">
+            <strong>Linear intuition asks:</strong> "How much gets added each year?"
+          </li>
+          <li class="mechanism-contrast">
+            <strong>Compound growth asks:</strong> "What is the current total growing on?"
+          </li>
+          <li class="mechanism-summary">The percentage stays the same, but the base keeps changing.</li>
         </ul>
       </section>
     </div>
 
     <hr class="stage-divider" />
 
-    <div class="stage">
+    <div class="stage stage-formula">
       <span class="stage-kicker">Step 4 &middot; The formula</span>
       <section data-testid="formula">
         <h2>The formula behind the curve</h2>
-        <p class="formula-expression">
-          A = P(1 + <span class="formula-var formula-var-r" data-testid="formula-var-r">r</span>)<sup
-            ><span class="formula-var formula-var-t" data-testid="formula-var-t">t</span></sup
-          >
-        </p>
-        <dl class="formula-legend">
-          <div><dt>P</dt><dd>starting principal</dd></div>
-          <div><dt>r</dt><dd>annual return rate</dd></div>
-          <div><dt>t</dt><dd>time in years</dd></div>
-          <div><dt>A</dt><dd>final amount</dd></div>
-        </dl>
+        <div class="formula-layout">
+          <p class="formula-expression">
+            A = P(1 + <span class="formula-var formula-var-r" data-testid="formula-var-r">r</span>)<sup
+              ><span class="formula-var formula-var-t" data-testid="formula-var-t">t</span></sup
+            >
+          </p>
+          <dl class="formula-legend">
+            <div><dt>P</dt><dd>starting principal</dd></div>
+            <div><dt class="formula-var formula-var-r">r</dt><dd>annual return rate</dd></div>
+            <div><dt class="formula-var formula-var-t">t</dt><dd>time in years</dd></div>
+            <div><dt>A</dt><dd>final amount</dd></div>
+          </dl>
+        </div>
         <p>
           The return rate <span class="formula-var formula-var-r">r</span> determines
           how strongly the balance grows each year. Time <span class="formula-var formula-var-t">t</span>
@@ -275,7 +285,7 @@ const explorePathD = pathD(exploreSeries, EXPLORE_YEARS_DEFAULT, exploreMaxValue
 
     <hr class="stage-divider" />
 
-    <div class="stage">
+    <div class="stage stage-explore">
       <span class="stage-kicker">Step 5 &middot; Explore</span>
       <section data-testid="explore">
         <h2>Explore it yourself</h2>

@@ -30,10 +30,16 @@
   --space-6: 2.25rem;
   --space-7: 3.25rem;
   --space-8: 4.5rem;
+  --space-9: 6rem;
 
   /* Prose stays narrow for readability; figures/controls get more room. */
   --measure: 34rem;
   --content-width: 40rem;
+
+  /* Shared breakpoint for the restrained two-column pairings (formula +
+     legend, decade comparison, r/t controls): wide enough that each side
+     still reads as a comfortable column, not a cramped one. */
+  --two-col: 40rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -116,7 +122,7 @@ h2 {
 h1 {
   max-width: 20ch;
   font-size: clamp(1.75rem, 1.35rem + 1.8vw, 2.5rem);
-  margin: 0 0 var(--space-4);
+  margin: 0 0 var(--space-5);
 }
 
 h2 {
@@ -124,12 +130,18 @@ h2 {
   margin: 0 0 var(--space-3);
 }
 
+/* A single, page-wide paragraph rhythm: every plain paragraph gets the same
+   gap to whatever follows it, so "paragraph to paragraph" reads as one
+   predictable beat everywhere it appears (mechanism, formula, explore). Rules
+   with their own testid/class (.lede, .result-value, etc.) override this. */
 p {
   max-width: var(--measure);
+  margin: 0 0 var(--space-4);
 }
 
 .lede {
   max-width: var(--measure);
+  margin: var(--space-4) 0 var(--space-6);
   color: var(--color-ink-muted);
   font-size: 1.05rem;
 }
@@ -146,7 +158,7 @@ p {
 
 .stage-kicker {
   display: block;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.09em;
@@ -160,14 +172,25 @@ p {
   margin: var(--space-7) 0 0;
 }
 
+/* The opening prediction is the one moment the whole page hinges on: give it
+   the most room of any stage, before and after, so nothing else competes for
+   attention until the visitor has chosen and revealed. */
+.stage-predict {
+  margin-bottom: var(--space-8);
+}
+
+.stage-predict + .stage-divider {
+  margin-top: var(--space-9);
+}
+
 /* Predictor ---------------------------------------------------------- */
 
 section[data-testid="predictor"] {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  margin: var(--space-5) 0 var(--space-6);
-  padding: var(--space-5);
+  gap: var(--space-5);
+  margin: var(--space-6) 0 0;
+  padding: var(--space-6);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 0.75rem;
@@ -225,7 +248,7 @@ button[data-testid="reveal-button"]:hover:not(:disabled) {
 /* Charts --------------------------------------------------------------- */
 
 .chart-figure {
-  margin: var(--space-5) 0;
+  margin: var(--space-6) 0;
 }
 
 svg[data-testid="growth-chart"],
@@ -294,7 +317,7 @@ svg[data-testid="explore-chart"] {
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-5);
   list-style: none;
-  margin: 0 0 var(--space-6);
+  margin: 0 0 var(--space-7);
   padding: 0;
   font-size: 0.9rem;
   color: var(--color-ink-muted);
@@ -335,21 +358,68 @@ section[data-testid="result"].is-revealed {
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-p[data-testid="explain-first-decade"],
-p[data-testid="explain-last-decade"] {
-  margin: 0 0 var(--space-3);
-  font-variant-numeric: tabular-nums;
-  color: var(--color-ink-muted);
+/* Primary: the number the whole reveal is about. Largest and boldest thing
+   in the stage, so it's the first thing read once the curve lands. */
+.result-value {
+  margin: 0 0 var(--space-6);
+  font-size: clamp(1.4rem, 1.2rem + 1vw, 1.9rem);
+  font-weight: 700;
 }
 
-p[data-testid="explain-principle"] {
+.result-value strong {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-actual);
+}
+
+.result-detail {
   max-width: var(--measure);
-  margin: 0 0 var(--space-4);
+}
+
+.result-principle {
+  margin: 0 0 var(--space-5);
   font-size: 1.05rem;
 }
 
-p[data-testid="explain-callout"] {
-  margin: var(--space-4) 0 0;
+/* Supporting evidence: the two decades sit side by side once there's room,
+   so the contrast between them is a glance, not a scroll. */
+.decade-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-5);
+}
+
+.decade {
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  color: var(--color-ink-muted);
+}
+
+@media (width >= 40rem) {
+  .decade-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .decade {
+    padding: 0 0 0 var(--space-6);
+    border-top: none;
+    border-left: 1px solid var(--color-border);
+  }
+
+  .decade:first-child {
+    padding-left: 0;
+    border-left: none;
+  }
+}
+
+/* Final takeaway: reads as the conclusion of the stage, not another item in
+   the list above it. */
+.result-callout {
+  margin: 0;
   padding: var(--space-4) var(--space-5);
   border-left: 3px solid var(--color-actual);
   background: var(--color-surface);
@@ -365,29 +435,51 @@ section[data-testid="mechanism"] p {
 }
 
 .mechanism-callouts {
-  max-width: var(--measure);
-  margin: var(--space-5) 0 0;
-  padding: var(--space-4) var(--space-5);
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: var(--content-width);
+  margin: var(--space-6) 0 0;
+  padding: 0;
   list-style: none;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 0.75rem;
+  overflow: hidden;
 }
 
-.mechanism-callouts li {
-  padding: var(--space-3) 0;
+.mechanism-contrast {
+  padding: var(--space-4) var(--space-5);
   border-top: 1px solid var(--color-border);
 }
 
-.mechanism-callouts li:first-child {
-  padding-top: 0;
+.mechanism-contrast:first-child {
   border-top: none;
 }
 
-.mechanism-callouts li:last-child {
-  padding-bottom: 0;
+.mechanism-summary {
+  padding: var(--space-3) var(--space-5) var(--space-4);
+  border-top: 1px solid var(--color-border);
   color: var(--color-ink-muted);
   font-style: italic;
+}
+
+@media (width >= 40rem) {
+  .mechanism-callouts {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mechanism-contrast {
+    border-top: none;
+  }
+
+  .mechanism-contrast + .mechanism-contrast {
+    border-left: 1px solid var(--color-border);
+  }
+
+  .mechanism-summary {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--color-border);
+  }
 }
 
 /* Formula ------------------------------------------------------------ */
@@ -396,8 +488,17 @@ section[data-testid="formula"] p {
   max-width: var(--measure);
 }
 
+/* The formula and its variable legend form one bridging unit: read together
+   on desktop, stacked but still adjacent on mobile. */
+.formula-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: var(--space-4) 0 var(--space-5);
+}
+
 .formula-expression {
-  margin: var(--space-4) 0;
+  margin: 0;
   font-size: clamp(1.6rem, 1.4rem + 1vw, 2.1rem);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
@@ -420,7 +521,7 @@ section[data-testid="formula"] p {
   grid-template-columns: repeat(2, auto 1fr);
   gap: var(--space-2) var(--space-4);
   max-width: 24rem;
-  margin: 0 0 var(--space-5);
+  margin: 0;
   font-size: 0.9rem;
   color: var(--color-ink-muted);
 }
@@ -438,17 +539,35 @@ section[data-testid="formula"] p {
   margin: 0;
 }
 
+@media (width >= 40rem) {
+  .formula-layout {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-7);
+  }
+
+  .formula-expression {
+    flex: none;
+  }
+
+  .formula-legend {
+    flex: 1;
+    max-width: none;
+  }
+}
+
 /* Explore ------------------------------------------------------------ */
 
+/* Grouped by hairline rules, not a filled card: this is exploration inside
+   the same narrative, not a separate settings form. */
 .explore-controls {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: var(--space-5);
   margin: var(--space-5) 0;
-  padding: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .explore-controls label {
@@ -478,18 +597,27 @@ section[data-testid="formula"] p {
   accent-color: var(--color-t);
 }
 
+@media (width >= 40rem) {
+  .explore-controls {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+}
+
 output {
   font-variant-numeric: tabular-nums;
   font-size: 1.05rem;
 }
 
 .explore-final {
-  margin: 0 0 var(--space-4);
-  font-size: 1.1rem;
+  margin: 0 0 var(--space-5);
+  font-size: 1.05rem;
+  font-weight: 400;
 }
 
 .explore-final strong {
   font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
 /* Motion ---------------------------------------------------------------- */
