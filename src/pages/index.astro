@@ -1,0 +1,121 @@
+---
+import Layout from "../layouts/Layout.astro";
+import {
+  CHART_HEIGHT,
+  CHART_WIDTH,
+  MARGIN,
+  PRINCIPAL,
+  RATE,
+  YEARS,
+  xForYear,
+  yForValue,
+} from "../scripts/compound";
+
+const yTicks = [0, 5000, 10000, 15000, 20000];
+const xTicks = [0, 5, 10, 15, 20, 25, 30];
+---
+
+<Layout title="Why we underestimate compound interest">
+  <header>
+    <nav aria-label="Primary">
+      <a href="./">Home</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Why we underestimate compound interest</h1>
+    <p>
+      ${PRINCIPAL.toLocaleString("en-US")} invested at {RATE * 100}% a year,
+      left untouched for {YEARS} years. Before you scroll on: guess what it's
+      worth.
+    </p>
+
+    <section data-testid="predictor">
+      <label for="guess-slider">
+        Your guess:
+        <output for="guess-slider" id="guess-value" data-testid="guess-value"
+          >${PRINCIPAL.toLocaleString("en-US")}</output
+        >
+      </label>
+      <input
+        type="range"
+        id="guess-slider"
+        data-testid="guess-slider"
+        min="0"
+        max="20000"
+        step="100"
+        value={PRINCIPAL}
+      />
+      <button type="button" data-testid="reveal-button">Reveal</button>
+    </section>
+
+    <svg
+      data-testid="growth-chart"
+      viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+      role="img"
+      aria-label={`Growth of $${PRINCIPAL} at ${RATE * 100}% over ${YEARS} years, compared to your guess`}
+    >
+      {
+        yTicks.map((tick) => (
+          <g>
+            <line
+              x1={MARGIN.left}
+              y1={yForValue(tick)}
+              x2={CHART_WIDTH - MARGIN.right}
+              y2={yForValue(tick)}
+              class="gridline"
+            />
+            <text
+              x={MARGIN.left - 8}
+              y={yForValue(tick)}
+              class="tick-label"
+              text-anchor="end"
+              dominant-baseline="middle"
+            >
+              ${tick / 1000}k
+            </text>
+          </g>
+        ))
+      }
+      {
+        xTicks.map((year) => (
+          <text
+            x={xForYear(year)}
+            y={CHART_HEIGHT - MARGIN.bottom + 18}
+            class="tick-label"
+            text-anchor="middle"
+          >
+            {year}
+          </text>
+        ))
+      }
+      <line
+        x1={MARGIN.left}
+        y1={MARGIN.top}
+        x2={MARGIN.left}
+        y2={CHART_HEIGHT - MARGIN.bottom}
+        class="axis"
+      />
+      <line
+        x1={MARGIN.left}
+        y1={CHART_HEIGHT - MARGIN.bottom}
+        x2={CHART_WIDTH - MARGIN.right}
+        y2={CHART_HEIGHT - MARGIN.bottom}
+        class="axis"
+      />
+      <line
+        data-testid="guess-marker"
+        x1={MARGIN.left}
+        x2={CHART_WIDTH - MARGIN.right}
+        y1={yForValue(PRINCIPAL)}
+        y2={yForValue(PRINCIPAL)}
+        class="guess-marker"
+      />
+      <path data-testid="actual-curve" class="actual-curve is-hidden" d="" />
+    </svg>
+
+    <p data-testid="result" hidden>
+      It's actually worth <strong data-testid="actual-value" />.
+    </p>
+  </main>
+  <script src="../scripts/main.ts"></script>
+</Layout>

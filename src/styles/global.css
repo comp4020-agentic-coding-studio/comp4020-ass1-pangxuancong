@@ -1,0 +1,65 @@
+body {
+  margin: 0;
+  padding: 2rem;
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  color: #1a1a1a;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+a {
+  color: #0b5fff;
+}
+
+section[data-testid="predictor"] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+svg[data-testid="growth-chart"] {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1.5rem 0;
+}
+
+.gridline {
+  stroke: #d8d8d8;
+  stroke-width: 1;
+}
+
+.axis {
+  stroke: #1a1a1a;
+  stroke-width: 1.5;
+}
+
+.tick-label {
+  font-size: 0.7rem;
+  fill: #4a4a4a;
+}
+
+.guess-marker {
+  stroke: #d1495b;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+.actual-curve {
+  stroke: #0b5fff;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+.is-hidden {
+  display: none;
+}
