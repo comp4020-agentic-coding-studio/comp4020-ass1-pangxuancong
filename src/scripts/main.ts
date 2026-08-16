@@ -280,7 +280,33 @@ export function wireExplorer(doc: Document): void {
   update();
 }
 
+// The toggle only ever writes an explicit "light"/"dark" choice — there's no
+// third "system" state to wire back to, matching the single-round spirit of
+// the rest of the page: once a reader picks an edition, that's the choice.
+export function wireThemeToggle(doc: Document): void {
+  const toggle = doc.querySelector<HTMLInputElement>(
+    '[data-testid="theme-toggle"]',
+  );
+  if (!toggle) return;
+
+  const root = doc.documentElement;
+  const view = doc.defaultView;
+  const stored = view?.localStorage.getItem("theme");
+
+  toggle.checked =
+    stored === "dark" ||
+    (stored !== "light" &&
+      (view?.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false));
+
+  toggle.addEventListener("change", () => {
+    const theme = toggle.checked ? "dark" : "light";
+    root.dataset.theme = theme;
+    view?.localStorage.setItem("theme", theme);
+  });
+}
+
 if (typeof document !== "undefined") {
   wirePredictor(document);
   wireExplorer(document);
+  wireThemeToggle(document);
 }

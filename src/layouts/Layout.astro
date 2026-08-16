@@ -15,6 +15,20 @@ const { title } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <title>{title}</title>
+    <script is:inline>
+      // Runs synchronously before the body paints, so an explicit stored
+      // preference wins before the browser ever renders the system-default
+      // theme — otherwise a dark-preferring reader would see a flash of the
+      // light "paper" edition on every load.
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          if (stored === "light" || stored === "dark") {
+            document.documentElement.dataset.theme = stored;
+          }
+        } catch {}
+      })();
+    </script>
   </head>
   <body>
     <slot />
