@@ -156,6 +156,23 @@ means building legibly is part of building well.
 You don't need a name, a student number, or any identity file in the repo: we
 know whose repo it is. Spend the effort on the work.
 
+## Animation Workflow Guidelines
+
+### 1. Requirements Clarification (Before Implementation)
+Whenever the user requests adding or updating an animation, prioritize asking clarifying questions before writing code:
+- **Duration & Timing:** Desired duration (ms/s), delay, easing curve (e.g., linear, ease-in-out, spring physics).
+- **Visual Style & Tone:** Minimalist, playful, cinematic, micro-interaction, or subtle hover effects.
+- **Trigger & Scope:** Triggered on scroll (viewport intersection), click, hover, page load, or route transition.
+- **Performance Constraints:** Mobile responsiveness, reduced-motion preferences (`prefers-reduced-motion`).
+
+### 2. Runtime Verification & Tool Check (After Implementation)
+Static code analysis or build success does not guarantee visual execution. Always perform runtime verification:
+- **Dev Server Validation:** Ensure the local dev server is running and the component mounts without runtime errors in the console.
+- **Tool-Assisted Check:** Use available browser automation/inspection tools (e.g., Puppeteer, Playwright, Chrome DevTools MCP, or browser screenshot tools) to verify that:
+  - Keyframes, CSS transitions, or JS animation libraries (e.g., Framer Motion, GSAP) actually trigger in the DOM.
+  - No CSS conflicts (e.g., `overflow: hidden`, z-index, missing initial opacity/transform states) prevent the animation from rendering visually.
+- **Fallback Handling:** Confirm the UI degrades gracefully if JavaScript is disabled or animations fail to load.
+
 ## This file is yours
 
 This CLAUDE.md is a starting point, not a fixed rulebook. As you learn what your
